@@ -13,18 +13,23 @@ import java.util.Date;
 @Component
 public class JwtProcessor {
 
-    // 1. jwt 생성
-    // 2. username(id) 추출
-    // 3. jwt유효성 검증(브라우저로부터 서버로 전송된 경우, 서버에서 검증할 때)
-
-    static private final long TOKEN_VALID_MILISECOND = 1000L * 60 * 5; // 5 분
-
-    private final String secretKey = "충분히 긴 임의의(랜덤한) 비밀키 문자열 배정 ";
+    //1. jwt 생성
+    static private final long TOKEN_VALID_MILISECOND = 1000L * 60 * 2; // 2분
+    private final String secretKey
+            = "충분히긴임의의(랜덤한) 비밀키문자열배정";
     private final Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
 
-//    private Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);  -- 운영시 사용
+    //3. jwt유효성 검증(브라우저로부터 서버로 전송된 경우, 서버에서 검증할 때)
+    public boolean validateToken(String token) {
+        Jws<Claims> claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token);
+        return true;
+    }
 
-    // <JWT 생성>
+    //private Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);  // 운영시 사용
+    // JWT 생성
     public String generateToken(String subject) {
         return Jwts.builder()
                 .setSubject(subject)
@@ -34,9 +39,7 @@ public class JwtProcessor {
                 .compact();
     }
 
-    // <JWT Subject(username) 추출 - 해석 불가인 경우 예외 발생>
-    // 예외 ExpiredJwtException, UnsupportedJwtException, MalformedJwtException, SignatureException,
-    //      IllegalArgumentException
+    //2. username(id)추출
     public String getUsername(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -46,13 +49,4 @@ public class JwtProcessor {
                 .getSubject();
     }
 
-    // <JWT 검증(유효 기간 검증) - 해석 불가인 경우 예외 발생>
-    public boolean validateToken(String token) {
-        Jws<Claims> claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token);
-        return true;
-    }
 }
-
