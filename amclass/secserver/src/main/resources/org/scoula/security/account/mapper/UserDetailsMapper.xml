@@ -5,6 +5,21 @@
 
 <mapper namespace="org.scoula.security.account.mapper.UserDetailsMapper">
 
+    <resultMap id="authMap" type="AuthVO">
+        <result property="username" column="username"/>
+        <result property="auth" column="auth"/>
+    </resultMap>
+
+    <resultMap id="memberMap" type="MemberVO">
+        <id property="username" column="username"/>
+        <result property="username" column="password"/>
+        <result property="password" column="email"/>
+        <result property="email" column="reg_date"/>
+        <result property="regDate" column="update_date"/>
+        <result property="updateDate" column="username"/>
+        <collection property="authList" resultMap="authMap"/>
+    </resultMap>
+
     <!--    검색하는 sql문 태그로 넣자.!!! -->
     <select id="get" resultType="MemberVO">
         select *

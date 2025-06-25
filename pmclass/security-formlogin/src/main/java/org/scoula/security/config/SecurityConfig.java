@@ -14,7 +14,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CharacterEncodingFilter;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -59,7 +65,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSION-ID")
                 .logoutSuccessUrl("/security/logout"); // GET logout 페이지로 전환
+
+        http.sessionManagement()
+                .maximumSessions(1)                        // 동시 세션 수 제한
+                .maxSessionsPreventsLogin(false)           // 새 로그인시 기존 세션 만료
+                .expiredUrl("/security/login?expired");    // 세션 만료시 리다이렉트
+
+        http.rememberMe()
+                .key("uniqueAndSecret")                    // 🔑 암호화 키
+                .tokenValiditySeconds(86400)               // ⏰ 24시간 유효
+                .userDetailsService(userDetailsService);   // 👤 사용자 정보 서비스
     }
+
 
 //    // 메모리 기반의 사용자 정보 등록
 //    @Override
@@ -87,4 +104,31 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder());
     }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        // CORS 설정 객체 생성
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOriginPatterns(List.of("*"));
+//   configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:5173"));
+
+
+        // 허용할 HTTP 메서드 목록 지정
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+
+        // 모든 요청 헤더 허용
+        configuration.setAllowedHeaders(List.of("*"));
+
+        // 자격 증명(쿠키, Authorization 헤더 등)을 포함한 요청 허용
+        configuration.setAllowCredentials(true);
+
+        // 특정 URL 경로 패턴에 대해 위의 CORS 설정을 적용
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration); // 모든 경로에 적용
+
+        // 설정된 CORS 소스를 반환 (스프링 시큐리티나 필터 체인에 의해 사용됨)
+        return source;
+    }
+
 }
