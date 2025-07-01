@@ -20,7 +20,7 @@ const member = reactive({
 // 오류 메시지를 표시하기 위한 반응형 참조값
 const error = ref('');
 
-// '아이디와 비밀번호가 모두 입력되었는가 ?'를 판단하는 계산 속성
+// '아이디와 비밀번호가 모두 입력되었는가?'를 판단하는 계산 속성
 // 둘 다 입력되지 않으면 true → 로그인 버튼 비활성화
 const disableSubmit = computed(() => !(member.username && member.password));
 
@@ -43,6 +43,7 @@ const login = async () => {
       <i class="fa-solid fa-right-to-bracket"></i>
       로그인
     </h1>
+
     <form @submit.prevent="login">
       <div class="mb-3 mt-3">
         <label for="username" class="form-label">
@@ -56,6 +57,7 @@ const login = async () => {
           v-model="member.username"
         />
       </div>
+
       <div class="mb-3">
         <label for="password" class="form-label">
           <i class="fa-solid fa-lock"></i>
@@ -68,7 +70,9 @@ const login = async () => {
           v-model="member.password"
         />
       </div>
+
       <div v-if="error" class="text-danger">{{ error }}</div>
+
       <button
         type="submit"
         class="btn btn-primary mt-4"

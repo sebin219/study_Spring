@@ -8,7 +8,7 @@ const avatar = ref(null);
 const checkError = ref('');
 
 const member = reactive({
-  //테스트용 초기화
+  // 테스트용 초기화
   username: 'hong',
   email: 'hong@gmail.com',
   password: '12',
@@ -17,7 +17,7 @@ const member = reactive({
 });
 
 const disableSubmit = ref(true);
-//username 중복체크
+// username 중복 체크
 const checkUsername = async () => {
   if (!member.username) {
     return alert('사용자 ID를 입력하세요.');
@@ -26,20 +26,19 @@ const checkUsername = async () => {
   disableSubmit.value = await authApi.checkUsername(member.username);
   console.log(disableSubmit.value, typeof disableSubmit.value);
   checkError.value = disableSubmit.value
-    ? '이미 사용중인 ID입니다 .'
-    : '사용가능한 ID입니다 .';
+    ? '이미 사용중인 ID입니다.'
+    : '사용가능한 ID입니다.';
 };
 
-// username입력 핸들러
+// username 입력 핸들러
 const changeUsername = () => {
   disableSubmit.value = true; //ID중복 체크를 하지 않았으므로 submit버튼 비활성화
   if (member.username) {
-    checkError.value = 'ID 중복 체크를 하셔야 합니다 .';
+    checkError.value = 'ID 중복 체크를 하셔야 합니다.';
   } else {
     checkError.value = '';
   }
 };
-
 const join = async () => {
   if (member.password != member.password2) {
     return alert('비밀번호가 일치하지 않습니다.');
@@ -103,6 +102,7 @@ const join = async () => {
           accept="image/png, image/jpeg"
         />
       </div>
+
       <div class="mb-3 mt-3">
         <label for="email" class="form-label">
           <i class="fa-solid fa-envelope"></i>
@@ -116,7 +116,6 @@ const join = async () => {
           v-model="member.email"
         />
       </div>
-
       <div class="mb-3">
         <label for="password" class="form-label">
           <i class="fa-solid fa-lock"></i> 비밀번호:
@@ -129,7 +128,6 @@ const join = async () => {
           v-model="member.password"
         />
       </div>
-
       <div class="mb-3">
         <label for="password" class="form-label">
           <i class="fa-solid fa-lock"></i> 비밀번호 확인:

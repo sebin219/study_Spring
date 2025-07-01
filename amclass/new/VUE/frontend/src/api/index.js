@@ -1,30 +1,53 @@
-import api from 'axios';
+import { useAuthStore } from '@/stores/auth';
+import axios from 'axios';
 
-const BASE_URL = '/api/member';
-const headers = { 'Content-Type': 'multipart/form-data' };
+//axios 객체 생성
+//--> 프로젝트 전체에서 사용할 객체
+// request/response 인터셉터 설정이 된 axios 객체를 사용하기 위함
 
-export default {
-  //username 중복체크, true:중복(사용불가), false: 사용가능
-  async checkUsername(username) {
-    const { data } = await api.get(`${BASE_URL}/checkusername/${username}`);
-    console.log('AUTH GET CHECKUSERNAME', data);
-    return data;
-  },
+const instance = axios.create({
+  timeout: 1000,
+});
 
-  async create(member) {
-    // 아바타 파일 업로드 – multipart 인코딩 필요(FormData 객체 사용)
-    const formData = new FormData();
-    formData.append('username', member.username);
-    formData.append('email', member.email);
-    formData.append('password', member.password);
+//request 인터셉터 설정 --> JWT를 header에 포함
+instance.interceptors.request.use(
+  (config) => {
+    //JWT를 가지고 와야함.
+    const { getToken } = useAuthStore();
+    const token = getToken();
 
-    if (member.avatar) {
-      formData.append('avatar', member.avatar);
+    //config객체를 이용해서 http의 header에 넣어줌.
+    if (token) {
+      //토큰이 있는 경우 header에 포함시킴
+      config.headers['Authorization'] = `Bearer ${token}`;
+      console.log('전송될 jwt>> ' + config.headers.Authorization);
     }
-
-    const { data } = await api.post(BASE_URL, formData, headers);
-
-    console.log('AUTH_POST:', data);
-    return data;
   },
-};
+  (error) => {
+    //요청 중 에러가 난 경우
+    return Promise.reject(error);
+  }
+);
+
+//response 인터셉터 설정 --> 응답 처리
+instance.interceptors.response.use(
+  (response) => {
+    if (response.status === 200) {
+      return response;
+    }
+    if (response.status === 404) {
+      return Promise.reject('404: 페이지 없음 ' + response.request);
+    }
+    return response;
+  },
+  async (error) => {
+    if (error.response?.status === 401) {
+      const { logout } = useAuthStore();
+      logout();
+      router.push('/auth/login?error=login_required');
+      return Promise.reject({ error: '로그인이 필요한 서비스입니다.' });
+    }
+    return Promise.reject(error);
+  }
+);
+export default instance;

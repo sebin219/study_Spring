@@ -1,5 +1,6 @@
 <script setup>
 import MenuItem from './MenuItem.vue';
+
 const props = defineProps({
   menus: { Type: Array, required: true },
 });
@@ -7,6 +8,6 @@ const props = defineProps({
 
 <template>
   <ul class="navbar-nav">
-    <MenuItem v-for="menu in menus" :menu="menu" />
+    <MenuItem v-for="menu in menus" :menu="menu" :key="menu.url" />
   </ul>
 </template>

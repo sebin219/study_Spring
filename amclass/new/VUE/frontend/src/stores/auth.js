@@ -1,5 +1,7 @@
 import { ref, computed, reactive } from 'vue';
 import { defineStore } from 'pinia';
+// import axios from 'axios'; 이렇게 적으면 안됨
+import axios from '@/api';
 
 const initState = {
   token: '', // 접근 토큰(JWT)
@@ -13,15 +15,25 @@ const initState = {
 export const useAuthStore = defineStore('auth', () => {
   const state = ref({ ...initState });
 
-  const isLogin = computed(() => !!state.value.user.username); //로그인 여부
-  const username = computed(() => state.value.user.username); //로그인 사용자 ID
-  const email = computed(() => state.value.user.email); //로그인 사용자 email
+  const isLogin = computed(() => !!state.value.user.username); // 로그인 여부
+
+  const username = computed(() => state.value.user.username); // 로그인 사용자 ID
+
+  const email = computed(() => state.value.user.email); // 로그인 사용자 email
+
   const login = async (member) => {
-    state.value.token = 'test token';
-    state.value.user = {
-      username: member.usernmae,
-      email: member.username + '@test.com',
-    };
+    // state.value.token = 'test token';
+    // state.value.user = {
+    //   username: member.username,
+    //   email: member.username + '@test.com',
+    // };
+
+    // api 호출
+    const { data } = await axios.post('/api/auth/login', member);
+    state.value = { ...data };
+
+    console.log(state);
+
     localStorage.setItem('auth', JSON.stringify(state.value));
   };
 
@@ -40,7 +52,21 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  const changeProfile = (member) => {
+    state.value.user.email = member.email;
+    localStorage.setItem('auth', JSON.stringify(state.value));
+  };
+
   load();
 
-  return { state, username, email, isLogin, login, logout, getToken };
+  return {
+    state,
+    username,
+    email,
+    isLogin,
+    changeProfile,
+    login,
+    logout,
+    getToken,
+  };
 });

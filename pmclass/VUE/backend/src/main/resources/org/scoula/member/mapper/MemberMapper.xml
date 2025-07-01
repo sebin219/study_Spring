@@ -50,4 +50,21 @@
         INSERT INTO tbl_member_auth(username, auth)
         VALUES (#{username}, #{auth})
     </insert>
+
+    <!-- 회원 정보 수정-->
+    <update id="update">
+        UPDATE tbl_member
+        SET
+        email = #{email},
+        update_date = now()             <!-- 수정 시간 자동 업데이트 -->
+        WHERE username = #{username}
+    </update>
+    <!-- 비밀번호 변경 -->
+    <update id="updatePassword">
+        UPDATE tbl_member
+        SET
+        password = #{newPassword},      <!-- 암호화된 새 비밀번호 -->
+        update_date = now()            <!-- 수정 시간 자동 업데이트 -->
+        WHERE username = #{username}
+    </update>
 </mapper>
