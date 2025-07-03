@@ -56,8 +56,10 @@ public class UploadFiles {
         try {
             Path path = Path.of(file.getPath());
             String mimeType = Files.probeContentType(path);
+
             response.setContentType(mimeType);
             response.setContentLength((int) file.length());
+
             try (OutputStream os = response.getOutputStream();
                  BufferedOutputStream bos = new BufferedOutputStream(os)) {
                 Files.copy(path, bos);
@@ -66,4 +68,6 @@ public class UploadFiles {
             throw new RuntimeException(e);
         }
     }
+
+
 }

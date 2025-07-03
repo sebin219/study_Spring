@@ -1,6 +1,5 @@
 import { ref, computed, reactive } from 'vue';
 import { defineStore } from 'pinia';
-// import axios from 'axios'; 이렇게 적으면 안됨
 import axios from '@/api';
 
 const initState = {
@@ -52,12 +51,12 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  load();
+
   const changeProfile = (member) => {
     state.value.user.email = member.email;
     localStorage.setItem('auth', JSON.stringify(state.value));
   };
-
-  load();
 
   return {
     state,

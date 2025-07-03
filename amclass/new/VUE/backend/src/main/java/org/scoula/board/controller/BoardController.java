@@ -4,12 +4,17 @@ package org.scoula.board.controller;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.scoula.board.domain.BoardAttachmentVO;
 import org.scoula.board.dto.BoardDTO;
 import org.scoula.board.service.BoardService;
+import org.scoula.common.pagination.Page;
+import org.scoula.common.pagination.PageRequest;
+import org.scoula.common.util.UploadFiles;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 
 @RestController
 @RequestMapping("/api/board")
@@ -31,9 +36,14 @@ public class BoardController {
             @ApiResponse(code = 500, message = "서버에서 오류가 발생했습니다.")
     })
     @GetMapping("")
-    public ResponseEntity<List<BoardDTO>> getList() {
-        return ResponseEntity.ok(service.getList());
+    public ResponseEntity<Page> getList(PageRequest pageRequest) {
+        return ResponseEntity.ok(service.getPage(pageRequest));
     }
+
+//    @GetMapping("")
+//    public ResponseEntity<List<BoardDTO>> getList() {
+//        return ResponseEntity.ok(service.getList());
+//    }
 
     @ApiOperation(value = "상세정보 얻기", notes = "게시글 상제 정보를  얻는 API")
     @ApiResponses(value = {
@@ -58,7 +68,7 @@ public class BoardController {
     @PostMapping("")
     public ResponseEntity<BoardDTO> create(
             @ApiParam(value = "게시글 객체", required = true)
-            @RequestBody BoardDTO board) {
+            BoardDTO board) {
         return ResponseEntity.ok(service.create(board));
     }
 
@@ -74,7 +84,7 @@ public class BoardController {
             @ApiParam(value = "게시글 ID", required = true, example = "1")
             @PathVariable Long no,
             @ApiParam(value = "게시글 객체", required = true)
-            @RequestBody BoardDTO board) {
+            BoardDTO board) {
         return ResponseEntity.ok(service.update(board));
     }
 
@@ -93,4 +103,23 @@ public class BoardController {
         return ResponseEntity.ok(service.delete(no));
     }
 
+
+    @GetMapping("/download/{no}")
+    public void download(@PathVariable Long no, HttpServletResponse response) throws Exception {
+        BoardAttachmentVO attachment = service.getAttachment(no);
+        File file = new File(attachment.getPath());
+        UploadFiles.download(response, file, attachment.getFilename());
+    }
+
+
+    @DeleteMapping("/deleteAttachment/{no}")
+    public ResponseEntity<Boolean> deleteAttachment(@PathVariable Long no) throws Exception {
+        return ResponseEntity.ok(service.deleteAttachment(no));
+
+    }
+
+
 }
+
+
+

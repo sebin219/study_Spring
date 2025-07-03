@@ -1,9 +1,10 @@
-import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
+import { useAuthStore } from '@/stores/auth';
+import router from '@/router';
 
-//axios 객체 생성
-//--> 프로젝트 전체에서 사용할 객체
-// request/response 인터셉터 설정이 된 axios 객체를 사용하기 위함
+//axios객체 생성
+//==> 프로젝트 전체에서 사용할 객체
+//==> request/response 인터셉터 설정이 된 axios객체를 사용하기 위함
 
 const instance = axios.create({
   timeout: 1000,
@@ -13,6 +14,7 @@ const instance = axios.create({
 instance.interceptors.request.use(
   (config) => {
     //JWT를 가지고 와야함.
+
     const { getToken } = useAuthStore();
     const token = getToken();
 
@@ -22,14 +24,15 @@ instance.interceptors.request.use(
       config.headers['Authorization'] = `Bearer ${token}`;
       console.log('전송될 jwt>> ' + config.headers.Authorization);
     }
+    return config;
   },
   (error) => {
-    //요청 중 에러가 난 경우
     return Promise.reject(error);
   }
 );
 
 //response 인터셉터 설정 --> 응답 처리
+// 응답 인터셉터
 instance.interceptors.response.use(
   (response) => {
     if (response.status === 200) {
@@ -42,6 +45,8 @@ instance.interceptors.response.use(
   },
   async (error) => {
     if (error.response?.status === 401) {
+      //localStorage에서 토큰 제거
+      //localStorage.removeItem('auth');
       const { logout } = useAuthStore();
       logout();
       router.push('/auth/login?error=login_required');

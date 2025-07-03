@@ -4,7 +4,8 @@ import { computed, reactive, ref } from 'vue';
 // 인증 관련 상태를 관리하는 Pinia 스토어 가져오기
 import { useAuthStore } from '@/stores/auth';
 // 라우팅 기능을 사용하기 위해 Vue Router의 useRouter 훅 가져오기
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+const cr = useRoute();
 
 // router 인스턴스를 생성하여 페이지 이동 등에 사용
 const router = useRouter();
@@ -28,7 +29,11 @@ const login = async () => {
   console.log(member);
   try {
     await auth.login(member);
-    router.push('/');
+    if (cr.query.next) {
+      router.push({ name: cr.query.next });
+    } else {
+      router.push('/');
+    }
   } catch (e) {
     // 로그인 에러
     console.log('에러=======', e);

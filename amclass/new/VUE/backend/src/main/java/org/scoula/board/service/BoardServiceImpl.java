@@ -6,6 +6,8 @@ import org.scoula.board.domain.BoardAttachmentVO;
 import org.scoula.board.domain.BoardVO;
 import org.scoula.board.dto.BoardDTO;
 import org.scoula.board.mapper.BoardMapper;
+import org.scoula.common.pagination.Page;
+import org.scoula.common.pagination.PageRequest;
 import org.scoula.common.util.UploadFiles;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,26 +23,16 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService {
 
+    private final static String BASE_DIR = "c:/upload/board";
     final private BoardMapper mapper;
 
     @Override
     public List<BoardDTO> getList() {
         log.info("getList..........");
 
-        return mapper.getList().stream()	// BoardVO의 스트림
-                .map(BoardDTO::of)			// BoardDTO의 스트림
-                .toList();								// List<BoardDTO> 변환
-    }
-
-    @Override
-    public BoardDTO get(Long no) {
-        log.info("get......" + no);
-
-        BoardDTO board = BoardDTO.of(mapper.get(no));
-        return Optional
-                .ofNullable(board)
-                .orElseThrow(NoSuchElementException::new);
-
+        return mapper.getList().stream()    // BoardVO의 스트림
+                .map(BoardDTO::of)            // BoardDTO의 스트림
+                .toList();                                // List<BoardDTO> 변환
     }
 
 //    @Override
@@ -52,7 +44,16 @@ public class BoardServiceImpl implements BoardService {
 //        board.setNo(vo.getNo());
 //    }
 
-    private final static String BASE_DIR = "c:/upload/board";
+    @Override
+    public BoardDTO get(Long no) {
+        log.info("get......" + no);
+
+        BoardDTO board = BoardDTO.of(mapper.get(no));
+        return Optional
+                .ofNullable(board)
+                .orElseThrow(NoSuchElementException::new);
+
+    }
 
     // 2개 이상의 insert 문이 실행될 수 있으므로 트랜잭션 처리 필요
     // RuntimeException인 경우만 자동 rollback.
@@ -66,7 +67,7 @@ public class BoardServiceImpl implements BoardService {
 
         // 파일 업로드 처리
         List<MultipartFile> files = board.getFiles();
-        if(files != null && !files.isEmpty()) {	// 첨부 파일이 있는 경우
+        if (files != null && !files.isEmpty()) {    // 첨부 파일이 있는 경우
             upload(boardVO.getNo(), files);
         }
 
@@ -74,8 +75,8 @@ public class BoardServiceImpl implements BoardService {
     }
 
     private void upload(Long bno, List<MultipartFile> files) {
-        for(MultipartFile part: files) {
-            if(part.isEmpty()) continue;
+        for (MultipartFile part : files) {
+            if (part.isEmpty()) continue;
             try {
                 String uploadPath = UploadFiles.upload(BASE_DIR, part);
                 BoardAttachmentVO attach = BoardAttachmentVO.of(part, bno, uploadPath);
@@ -92,6 +93,13 @@ public class BoardServiceImpl implements BoardService {
         log.info("update......" + board);
         mapper.update(board.toVo());
 
+        // 파일 업로드 처리
+        List<MultipartFile> files = board.getFiles();
+        if (files != null && !files.isEmpty()) {
+            upload(board.getNo(), files);
+        }
+
+
         return get(board.getNo());
     }
 
@@ -104,7 +112,7 @@ public class BoardServiceImpl implements BoardService {
         return board;
     }
 
-        // 첨부파일 한 개 얻기
+    // 첨부파일 한 개 얻기
     @Override
     public BoardAttachmentVO getAttachment(Long no) {
         return mapper.getAttachment(no);
@@ -116,4 +124,33 @@ public class BoardServiceImpl implements BoardService {
         return mapper.deleteAttachment(no) == 1;
     }
 
+    @Override
+    public Page<BoardDTO> getPage(PageRequest pageRequest) {
+
+        //특정한 페이지번호에 해당하는 게시물 리스트를 Page객체로 만들어주어야함.
+        //Page객체안에는 List<BoardDTO>, amount, totalCount
+        List<BoardVO> list = mapper.getPage(pageRequest); //특정한 페이지에 대한 목록
+        int totalCount = mapper.getTotalCount(); //전체 게시물의 수
+
+        //vue에 여러가지 값을 넣어서 응답할 예정
+        //Page객체 사용할 예정임.
+        //Page<BoardDTO> page = new Page(list, totalCount,.....);
+        //해당 입력 필드로 초기화를 시켜서 객체하고 싶을 때 사용
+
+        //db에서 가지고 결과로 page수를 계산해서 Page객체로 만들어야함. of()함수를 만들었음.
+        Page<BoardDTO> page = Page.of(pageRequest, totalCount,
+                list.stream().map(BoardDTO::of).toList());
+        return page;
+    }
 }
+
+
+
+
+
+
+
+
+
+
+

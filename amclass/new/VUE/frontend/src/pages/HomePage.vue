@@ -1,12 +1,11 @@
-<script setup></script>
+<script setup>
+import startImage from '@/assets/images/start.png';
+</script>
 
 <template>
-  <h1>첫 페이지입니다.</h1>
-  여기가 렌더링 들어가
+  <h1>KB 6기 파이팅!</h1>
   <hr />
-  <img
-    src="https://cdn.pixabay.com/photo/2017/01/31/15/24/face-2025030_960_720.png"
-  />
+  <img :src="startImage" alt="Start Image" width="700" height="500" />
 </template>
 
 <style scoped></style>

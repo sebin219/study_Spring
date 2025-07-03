@@ -9,6 +9,7 @@ const router = useRouter(); // 라우터 인스턴스 생성
 //////////////////////////////////////////
 
 const auth = useAuthStore();
+
 const avatar = ref(null);
 const avatarPath = `/api/member/${auth.username}/avatar`;
 const member = reactive({
@@ -35,7 +36,6 @@ const onSubmit = async () => {
     auth.changeProfile(member);
 
     router.push('/'); // --> 첫 페이지로 이동
-
     alert('정보를 수정하였습니다.');
   } catch (e) {
     error.value = e.response.data;
@@ -66,7 +66,6 @@ const onSubmit = async () => {
           accept="image/png, image/jpeg"
         />
       </div>
-
       <div class="mb-3 mt-3">
         <label for="email" class="form-label">
           <i class="fa-solid fa-envelope"></i>
